@@ -79,15 +79,6 @@ addwise/
 5. Add authorized redirect URIs
 6. Copy the Client ID and Client Secret to your `.env` file
 
-## Security Features
-
-- Password hashing using modern algorithms
-- CSRF protection
-- XSS prevention
-- Secure session management
-- Input validation and sanitization
-- Environment variable protection
-- Secure password reset flow
 
 ## Usage
 
@@ -117,24 +108,5 @@ addwise/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## Security
-
-- Never commit the `.env` file
-- Keep dependencies updated
-- Regularly check for security vulnerabilities
-- Use HTTPS in production
-- Implement rate limiting for login attempts
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please open an issue in the GitHub repository or contact the maintainers.
-
-## Acknowledgments
-
-- Google OAuth API
-- PHP Community
-- All contributors and users 
+ 
+Happy Task managing with Addwise
