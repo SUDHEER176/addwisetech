@@ -4,13 +4,13 @@ A secure and modern user authentication system built with PHP, featuring Google 
 
 ## Features
 
-- 🔐 Secure User Authentication
-- 🔑 Google OAuth Integration
-- ✉️ Email Verification System
-- 🔄 Password Reset Functionality
-- 📱 Responsive Design
-- 🔒 Session Management
-- 🛡️ Security Best Practices
+-  Secure User Authentication
+-  Google OAuth Integration
+-  Email Verification System
+-  Password Reset Functionality
+-  Responsive Design
+-  Session Management
+-  Security Best Practices
 
 ## Project Structure
 
