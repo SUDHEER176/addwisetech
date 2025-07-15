@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// Redirect to dashboard if already logged in
-if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+// Redirect to super admin dashboard if already logged in
+if (isset($_SESSION['super_admin_id'])) {
+    header("Location: super-admin-dashboard.php");
     exit();
 }
 
@@ -33,66 +33,77 @@ $error = "";
 $success = "";
 
 // Rate limiting
-if (!isset($_SESSION['login_attempts'])) {
-    $_SESSION['login_attempts'] = 0;
-    $_SESSION['last_attempt'] = time();
+if (!isset($_SESSION['super_admin_login_attempts'])) {
+    $_SESSION['super_admin_login_attempts'] = 0;
+    $_SESSION['super_admin_last_attempt'] = time();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check rate limiting
-    if ($_SESSION['login_attempts'] >= 5 && (time() - $_SESSION['last_attempt']) < 300) {
+    if ($_SESSION['super_admin_login_attempts'] >= 3 && (time() - $_SESSION['super_admin_last_attempt']) < 300) {
         $error = "Too many login attempts. Please try again in 5 minutes.";
     } else {
-        $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
+        $username = filter_var(trim($_POST["username"]), FILTER_SANITIZE_STRING);
         $password = trim($_POST["password"]);
 
-        if (empty($email) || empty($password)) {
-            $error = "Please enter both email and password.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = "Please enter a valid email address.";
+        if (empty($username) || empty($password)) {
+            $error = "Please enter both username and password.";
         } else {
-            $sql = "SELECT id, email, password, is_active, last_login, role FROM users WHERE email = ? LIMIT 1";
-            $stmt = $conn->prepare($sql);
-            
-            if ($stmt) {
-                $stmt->bind_param("s", $email);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($row = $result->fetch_assoc()) {
-                    if (!$row['is_active']) {
-                        $error = "Your account has been deactivated. Please contact support.";
-                    } elseif (password_verify($password, $row['password'])) {
-                        // Successful login
-                        $_SESSION['user_id'] = $row['id'];
-                        $_SESSION['email'] = $row['email'];
-                        $_SESSION['role'] = $row['role']; // <-- Add this line
-                        $_SESSION['login_time'] = time();
-                        $_SESSION['login_attempts'] = 0;
-                        
-                        // Update last login
-                        $update_sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-                        $update_stmt = $conn->prepare($update_sql);
-                        $update_stmt->bind_param("i", $row['id']);
-                        $update_stmt->execute();
-                        $update_stmt->close();
-                        
-                        session_regenerate_id(true);
-                        header("Location: dashboard.php");
-                        exit();
-                    } else {
-                        $error = "Invalid email or password.";
-                        $_SESSION['login_attempts']++;
-                        $_SESSION['last_attempt'] = time();
-                    }
-                } else {
-                    $error = "Invalid email or password.";
-                    $_SESSION['login_attempts']++;
-                    $_SESSION['last_attempt'] = time();
-                }
-                $stmt->close();
+            // Hardcoded super admin check
+            if ($username === "admin" && $password === "admin123") {
+                // Successful login
+                $_SESSION['super_admin_id'] = 1;
+                $_SESSION['super_admin_username'] = "admin";
+                $_SESSION['super_admin_login_time'] = time();
+                $_SESSION['super_admin_login_attempts'] = 0;
+                
+                session_regenerate_id(true);
+                header("Location: super-admin-dashboard.php");
+                exit();
             } else {
-                $error = "Database error. Please try again.";
+                // Check in super_admins table
+                $sql = "SELECT id, username, password, is_active FROM super_admins WHERE username = ? LIMIT 1";
+                $stmt = $conn->prepare($sql);
+                
+                if ($stmt) {
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    if ($row = $result->fetch_assoc()) {
+                        if (!$row['is_active']) {
+                            $error = "Your account has been deactivated. Please contact support.";
+                        } elseif (password_verify($password, $row['password'])) {
+                            // Successful login
+                            $_SESSION['super_admin_id'] = $row['id'];
+                            $_SESSION['super_admin_username'] = $row['username'];
+                            $_SESSION['super_admin_login_time'] = time();
+                            $_SESSION['super_admin_login_attempts'] = 0;
+                            
+                            // Update last login
+                            $update_sql = "UPDATE super_admins SET last_login = NOW() WHERE id = ?";
+                            $update_stmt = $conn->prepare($update_sql);
+                            $update_stmt->bind_param("i", $row['id']);
+                            $update_stmt->execute();
+                            $update_stmt->close();
+                            
+                            session_regenerate_id(true);
+                            header("Location: super-admin-dashboard.php");
+                            exit();
+                        } else {
+                            $error = "Invalid username or password.";
+                            $_SESSION['super_admin_login_attempts']++;
+                            $_SESSION['super_admin_last_attempt'] = time();
+                        }
+                    } else {
+                        $error = "Invalid username or password.";
+                        $_SESSION['super_admin_login_attempts']++;
+                        $_SESSION['super_admin_last_attempt'] = time();
+                    }
+                    $stmt->close();
+                } else {
+                    $error = "Database error. Please try again.";
+                }
             }
         }
     }
@@ -106,7 +117,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AddWise - Sign In</title>
+    <title>AddWise - Super Admin Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -694,20 +705,24 @@ $conn->close();
 </head>
 <body>
     <div class="container">
+        <!-- Top Left Back Button -->
+        
         <!-- Left Side - Welcome Section -->
         <div class="welcome-section" style="display: flex; align-items: center; justify-content: center;">
             <div class="welcome-content" style="width:100%;">
                 <h1 class="welcome-title" style="font-size:2rem; text-align:center; margin:0 auto;">
-                    Welcome to AddWise! Please sign in to continue.
+                    Welcome, Super Admin!
                 </h1>
+                <p class="welcome-subtitle" style="text-align:center;">
+                    Manage users, settings, and more with full control over the AddWise platform.
+                </p>
             </div>
         </div>
-        
         <!-- Right Side - Form Section -->
         <div class="form-section">
             <div class="form-header">
-                <h2 class="form-title">Sign In</h2>
-                <p class="form-subtitle">Welcome back! Please enter your details</p>
+                <h1 class="form-title">Super Admin Login</h1>
+                <p class="form-subtitle">Enter your credentials to access the admin panel</p>
             </div>
 
             <?php if ($error): ?>
@@ -723,52 +738,23 @@ $conn->close();
                     <?php echo htmlspecialchars($success); ?>
                 </div>
             <?php endif; ?>
-            
-            <!-- Google Sign-in Button -->
-            <a href="#" class="google-btn" onclick="signInWithGoogle()" role="button" aria-label="Sign in with Google">
-                <svg class="google-icon" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continue with Google
-            </a>
-            
-            <div class="divider">
-                <span>or</span>
-            </div>
-            
-          <!-- Super Admin & Admin Buttons -->
-<div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 24px;">
-    <button type="button" class="submit-btn"
-        style="width:auto; padding:10px 24px; background:linear-gradient(135deg,  0%,#a21caf 100%); "onclick= "window.location.href='super-admin-login.php'"> 
-        Super Admin
-    </button>
-    <button type="button" class="submit-btn"
-        style="width:auto; padding:10px 24px; background:linear-gradient(135deg, 0%,#059669 100%); "onclick= "window.location.href='admin-login.php'"> 
-       
-        Admin
-    </button>
-</div>
-            
-            <form method="POST" action="" id="loginForm" novalidate>
+
+            <form method="POST" action="" id="loginForm">
                 <div class="form-group">
-                    <label for="email" class="form-label">Email Address</label>
+                    <label for="username" class="form-label">Username</label>
                     <div class="input-wrapper">
-                        <span class="input-icon">📧</span>
+                        <span class="input-icon">👤</span>
                         <input 
-                            type="email" 
-                            id="email"
-                            name="email" 
+                            type="text" 
+                            id="username"
+                            name="username" 
                             class="form-input"
-                            placeholder="Enter your email"
-                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                            placeholder="Enter your username"
                             required 
-                            autocomplete="email"
+                            autocomplete="username"
+                            value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>"
                         >
                     </div>
-                    <div class="field-error" id="email-error"></div>
                 </div>
 
                 <div class="form-group">
@@ -784,294 +770,28 @@ $conn->close();
                             required 
                             autocomplete="current-password"
                         >
-                        <button type="button" class="password-toggle" onclick="togglePassword()">
-                            👁️
-                        </button>
                     </div>
-                    <div class="field-error" id="password-error"></div>
                 </div>
-                
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember">
-                        Remember me
-                    </label>
-                    <a href="forgot-password.php" class="forgot-password">Forgot password?</a>
-                </div>
-                
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <span>Sign In</span>
+
+                <button type="submit" class="submit-btn">
+                    Sign In
                 </button>
-            </form>
-            
-            <div class="footer-links">
-                <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
+                 <div class="footer-links">
+                Not an super admin? <a href="login.php">Go to User Login</a>
             </div>
+            </form>
         </div>
     </div>
-
     <script>
-        // Enhanced JavaScript functionality
-        class LoginForm {
-            constructor() {
-                this.form = document.getElementById('loginForm');
-                this.submitBtn = document.getElementById('submitBtn');
-                this.emailInput = document.getElementById('email');
-                this.passwordInput = document.getElementById('password');
-                this.init();
-            }
-
-            init() {
-                this.setupEventListeners();
-                this.setupValidation();
-                this.autoFocus();
-                this.animateStats();
-            }
-
-            setupEventListeners() {
-                // Form submission
-                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-                
-                // Real-time validation
-                this.emailInput.addEventListener('blur', () => this.validateEmail());
-                this.passwordInput.addEventListener('blur', () => this.validatePassword());
-                
-                // Input improvements
-                this.emailInput.addEventListener('input', () => this.clearError('email'));
-                this.passwordInput.addEventListener('input', () => this.clearError('password'));
-                
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-            }
-
-            setupValidation() {
-                // Email validation
-                this.emailInput.addEventListener('input', () => {
-                    if (this.emailInput.value && this.isValidEmail(this.emailInput.value)) {
-                        this.emailInput.classList.remove('error');
-                    }
-                });
-
-                // Password validation
-                this.passwordInput.addEventListener('input', () => {
-                    if (this.passwordInput.value.length >= 6) {
-                        this.passwordInput.classList.remove('error');
-                    }
-                });
-            }
-
-            validateEmail() {
-                const email = this.emailInput.value.trim();
-                
-                if (!email) {
-                    this.showFieldError('email', 'Email is required');
-                    return false;
-                } else if (!this.isValidEmail(email)) {
-                    this.showFieldError('email', 'Please enter a valid email address');
-                    return false;
-                } else {
-                    this.clearFieldError('email');
-                    return true;
-                }
-            }
-
-            validatePassword() {
-                const password = this.passwordInput.value;
-                
-                if (!password) {
-                    this.showFieldError('password', 'Password is required');
-                    return false;
-                } else if (password.length < 6) {
-                    this.showFieldError('password', 'Password must be at least 6 characters');
-                    return false;
-                } else {
-                    this.clearFieldError('password');
-                    return true;
-                }
-            }
-
-            isValidEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-
-            showFieldError(field, message) {
-                const input = document.getElementById(field);
-                const errorElement = document.getElementById(field + '-error');
-                
-                input.classList.add('error');
-                errorElement.textContent = message;
-                errorElement.classList.add('show');
-            }
-
-            clearFieldError(field) {
-                const input = document.getElementById(field);
-                const errorElement = document.getElementById(field + '-error');
-                
-                input.classList.remove('error');
-                errorElement.classList.remove('show');
-            }
-
-            clearError(field) {
-                const input = document.getElementById(field);
-                if (input.classList.contains('error')) {
-                    input.classList.remove('error');
-                    this.clearFieldError(field);
-                }
-            }
-
-            handleSubmit(e) {
-                const emailValid = this.validateEmail();
-                const passwordValid = this.validatePassword();
-                
-                if (!emailValid || !passwordValid) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                this.setLoadingState(true);
-            }
-
-            setLoadingState(loading) {
-                if (loading) {
-                    this.submitBtn.classList.add('loading');
-                    this.submitBtn.disabled = true;
-                } else {
-                    this.submitBtn.classList.remove('loading');
-                    this.submitBtn.disabled = false;
-                }
-            }
-
-            autoFocus() {
-                if (!this.emailInput.value) {
-                    this.emailInput.focus();
-                } else if (!this.passwordInput.value) {
-                    this.passwordInput.focus();
-                }
-            }
-
-            handleKeyboard(e) {
-                // Ctrl/Cmd + Enter to submit
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    this.form.dispatchEvent(new Event('submit'));
-                }
-            }
-
-            animateStats() {
-                const stats = document.querySelectorAll('.stat-number');
-                stats.forEach(stat => {
-                    const finalValue = stat.textContent;
-                    if (finalValue.includes('K')) {
-                        this.animateNumber(stat, 0, parseInt(finalValue) * 1000, 'K+');
-                    } else if (finalValue.includes('%')) {
-                        this.animateNumber(stat, 0, parseFloat(finalValue), '%');
-                    }
-                });
-            }
-
-            animateNumber(element, start, end, suffix) {
-                const duration = 2000;
-                const startTime = performance.now();
-                
-                const animate = (currentTime) => {
-                    const elapsed = currentTime - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    
-                    const current = start + (end - start) * progress;
-                    
-                    if (suffix === 'K+') {
-                        element.textContent = Math.floor(current / 1000) + 'K+';
-                    } else if (suffix === '%') {
-                        element.textContent = current.toFixed(1) + '%';
-                    } else {
-                        element.textContent = Math.floor(current) + suffix;
-                    }
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    }
-                };
-                
-                requestAnimationFrame(animate);
-            }
-        }
-
-        // Password toggle functionality
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleBtn = document.querySelector('.password-toggle');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleBtn.textContent = '🙈';
-            } else {
-                passwordInput.type = 'password';
-                toggleBtn.textContent = '👁️';
-            }
-        }
-
-        // Google Sign-in
-        function signInWithGoogle() {
-            const btn = event.target.closest('.google-btn');
-            const originalText = btn.innerHTML;
-            
-            btn.style.opacity = '0.7';
-            btn.style.pointerEvents = 'none';
-            btn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #ccc; border-top-color: #333; border-radius: 50%; animation: spin 1s linear infinite;"></div> Connecting...';
-            
-            setTimeout(() => {
-                alert('Google Sign-in integration needed. Please implement Google OAuth 2.0.');
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                btn.innerHTML = originalText;
-            }, 1500);
-        }
-
-        // Auto-hide messages
-        function autoHideMessages() {
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(msg => {
-                setTimeout(() => {
-                    msg.style.opacity = '0';
-                    msg.style.transform = 'translateY(-10px)';
-                    setTimeout(() => msg.remove(), 300);
-                }, 5000);
-            });
-        }
-
-        // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            new LoginForm();
-            autoHideMessages();
+            const form = document.getElementById('loginForm');
+            const submitBtn = form.querySelector('.submit-btn');
+
+            form.addEventListener('submit', function(e) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing in...';
+            });
         });
-
-        // Form persistence (remember form data)
-        window.addEventListener('beforeunload', function() {
-            const email = document.getElementById('email').value;
-            if (email) {
-                localStorage.setItem('rememberedEmail', email);
-            }
-        });
-
-        // Restore form data
-        window.addEventListener('load', function() {
-            const rememberedEmail = localStorage.getItem('rememberedEmail');
-            if (rememberedEmail && !document.getElementById('email').value) {
-                document.getElementById('email').value = rememberedEmail;
-            }
-        });
-
-        // Prevent back navigation to login page if logged in
-        <?php if (isset($_SESSION['user_id'])): ?>
-        history.pushState(null, null, location.href);
-        window.onpopstate = function () {
-            location.replace('dashboard.php');
-        };
-        <?php endif; ?>
-
     </script>
-    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
-        <a href="super-admin-dashboard.php">Super Admin Dashboard</a>
-    <?php endif; ?>
 </body>
 </html>
