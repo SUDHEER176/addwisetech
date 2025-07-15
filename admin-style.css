@@ -1,0 +1,541 @@
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #e2e8f0;
+    --navbar-bg: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+    --navbar-text: #fff;
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --text-heading: #1f2937;
+    --text-body: #374151;
+    --text-light: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: var(--bg-page);
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    color: var(--text-body);
+    line-height: 1.6;
+}
+
+/* Typography and Base Styles */
+h2, h3 {
+    color: var(--text-heading);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    z-index: 900;
+}
+.sidebar-header {
+    padding: 0 24px 20px;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 20px;
+}
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--navbar-text);
+    font-weight: 600;
+}
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.nav-item {
+    margin: 4px 0;
+}
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all 0.2s;
+    gap: 12px;
+    font-size: 0.95rem;
+}
+.nav-link:hover, .nav-link.active {
+    background: #334155;
+    color: var(--navbar-text);
+    padding-left: 28px;
+}
+.nav-link svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Main Content Area */
+.main-wrapper {
+    flex: 1;
+    margin-left: 280px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+/* Navbar */
+.navbar {
+    background: var(--navbar-bg);
+    color: var(--navbar-text);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.menu-toggle {
+    display: none; /* Hidden by default on desktop */
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 16px;
+}
+.menu-toggle svg {
+    width: 24px;
+    height: 24px;
+}
+.navbar .brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-btn {
+    background: none;
+    border: none;
+    color: #e0e7ef;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: var(--bg-card);
+    min-width: 220px;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-md);
+    z-index: 1000;
+    margin-top: 8px;
+    overflow: hidden; /* Ensure border radius is applied */
+}
+.dropdown-content a {
+    color: var(--text-body);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+.dropdown-content a:hover {
+    background: var(--bg-page);
+    color: var(--primary-color);
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown:hover .dropdown-btn {
+    background: rgba(255,255,255,0.1);
+}
+
+/* Page Content */
+.main-content {
+    padding: 32px;
+    flex: 1;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Adjusted min width */
+    gap: 24px; /* Consistent gap */
+    margin-top: 20px;
+}
+.dashboard-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px; /* Consistent padding */
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+.dashboard-section h3 {
+    margin: 0 0 20px 0;
+    color: var(--primary-dark);
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 18px; /* Consistent margin-bottom */
+}
+.form-group:last-child {
+    margin-bottom: 0;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px; /* Consistent margin for label */
+    color: var(--text-heading);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    color: var(--text-body);
+    transition: all 0.2s;
+    box-sizing: border-box; /* Include padding and border in element's total width */
+}
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+/* Align form button to the left */
+.dashboard-section form button.btn {
+    display: inline-block; /* Ensure button doesn't take full width */
+     margin-top: 20px; /* Increased space above the button */
+}
+
+/* Button Styles */
+.btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center; /* Center button text */
+    width: auto; /* Auto width for buttons */
+    text-align: center; /* Ensure text is centered */
+}
+.btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Table Styles */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden; /* Ensure rounded corners on table */
+}
+.data-table th, 
+.data-table td {
+    padding: 12px 15px; /* Adjusted padding */
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle; /* Vertically align table cell content */
+}
+ .data-table tbody tr:last-child td {
+    border-bottom: none;
+ }
+.data-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: 0.85rem; /* Slightly smaller font for headers */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.data-table td {
+    color: var(--text-body);
+    font-size: 0.95rem;
+}
+.data-table tr:hover {
+    background: #f3f4f6; /* Lighter hover effect */
+}
+.data-table td .btn {
+     padding: 5px 10px; /* Smaller button in table */
+     font-size: 0.8rem; /* Smaller font for button */
+     white-space: nowrap; /* Prevent button text wrapping */
+     display: inline-block; /* Ensure button doesn't interfere with flex/grid in cell */
+     margin: 0; /* Remove any default button margin */
+}
+.data-table td:last-child {
+     text-align: center; /* Center the actions column */
+     padding-right: 15px; /* Add padding to the right of the last column */
+}
+ .data-table th:last-child {
+     text-align: center; /* Center the header for the actions column */
+     padding-right: 15px; /* Add padding to the right of the last column header */
+ }
+ /* Ensure text in table cells does not overflow */
+ .data-table td {
+     word-break: break-word;
+ }
+
+/* Utility/Message Styles */
+.no-data {
+    color: var(--text-light);
+    text-align: center;
+    padding: 32px;
+    font-size: 0.95rem;
+}
+.error {
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    text-align: left; /* Align error text left */
+}
+ .success {
+    color: #059669;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    text-align: left; /* Align success text left */
+}
+
+/* QR Code Modal */
+#qrModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6); /* Slightly darker overlay */
+    backdrop-filter: blur(5px); /* Increased blur */
+    z-index: 1000;
+    justify-content: center; /* Center modal content */
+    align-items: center; /* Center modal content */
+}
+#qrModal > div {
+    background: var(--bg-card);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2); /* Stronger shadow */
+    max-width: 450px; /* Increased max width */
+    width: 90%;
+    text-align: center;
+    position: relative; /* For absolute positioning of close button if needed */
+}
+#qrModal h3 {
+    margin: 0 0 24px 0;
+    color: var(--text-heading);
+    font-size: 1.5rem; /* Larger heading */
+}
+#qrcode {
+    background: white;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    display: inline-block;
+    margin-bottom: 24px; /* Space below QR code */
+}
+#qrModal .btn {
+    margin-top: 0; /* Remove margin top from modal button */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    .main-wrapper {
+        margin-left: 240px;
+    }
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjusted min width */
+    }
+     .main-content {
+         padding: 20px;
+     }
+      .navbar {
+          padding: 0 20px;
+      }
+       .sidebar-header, .nav-link {
+           padding-left: 20px;
+           padding-right: 20px;
+       }
+        .nav-link:hover, .nav-link.active {
+            padding-left: 24px; /* Adjusted hover padding */
+        }
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    .sidebar {
+        width: 280px; /* Keep full width on mobile when active */
+        transform: translateX(-100%);
+        z-index: 999; /* Ensure sidebar is above main content but below overlay */
+    }
+     .sidebar.active {
+         transform: translateX(0);
+     }
+    .main-wrapper {
+        margin-left: 0;
+    }
+    .navbar {
+        padding: 0 16px;
+        height: 60px; /* Slightly smaller navbar on mobile */
+    }
+    .navbar .brand {
+        font-size: 1.2rem;
+    }
+    .main-content {
+        padding: 16px;
+    }
+    .dashboard-grid {
+        gap: 16px;
+    }
+     .dashboard-section {
+         padding: 20px;
+     }
+      .dashboard-section h3 {
+          font-size: 1.1rem;
+      }
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 900; /* Ensure overlay is above sidebar */
+    }
+    .overlay.active {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+     .sidebar {
+         width: 250px;
+     }
+      .sidebar.active {
+          transform: translateX(0);
+      }
+    .main-content {
+        padding: 12px;
+    }
+     .dashboard-section {
+         padding: 16px;
+     }
+      .dashboard-section h3 {
+          font-size: 1rem;
+          padding-bottom: 8px;
+      }
+     .form-group {
+         margin-bottom: 16px;
+     }
+      .form-group label {
+          font-size: 0.9rem;
+      }
+       .form-group input, .form-group select {
+           font-size: 0.9rem;
+           padding: 8px 10px;
+       }
+    .data-table th, .data-table td {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+     .data-table th {
+         font-size: 0.8rem;
+     }
+     .btn {
+         padding: 8px 14px;
+         font-size: 0.9rem;
+     }
+      #qrModal > div {
+          padding: 24px;
+      }
+      #qrModal h3 {
+          font-size: 1.2rem;
+      }
+       #qrcode {
+           padding: 12px;
+       }
+} 
